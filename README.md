@@ -36,16 +36,30 @@ This installs: `geopandas`, `shapely`, `pyproj`, `rasterio`, `fiona`.
    ```
    Example: `34.142534, -118.743983`
 
-2. **Run the script** (from the project root, with the venv activated if you use it):
+2. **Validate assets** (recommended first step):
+
+   ```bash
+   python scripts/validate_assets.py
+   ```
+   Checks that the DEM and shapefiles exist, have CRS, and are readable.
+
+3. **Run the clipping script** (from the project root):
 
    ```bash
    python clip_for_hecras.py
    ```
+   Or: `python scripts/clip_for_hecras.py`
 
-3. **Outputs** are written to `output/`:
-   - `site_buffer_200m.shp` – 200 m buffer polygon (for QA/maps)
-   - `dem_clipped_200m.tif` – clipped terrain for HEC-RAS
-   - `*_clipped_200m.shp` – one clipped shapefile per input layer
+4. **Run tests** (optional; install dev deps first: `pip install -r requirements-dev.txt`):
+
+   ```bash
+   python scripts/run_tests.py
+   ```
+   Or: `python -m pytest tests/ -v`
+
+5. **Outputs** are written to:
+   - `output/` – 200 m buffer (HEC-RAS): `dem_clipped_200m.tif`, `site_buffer_200m.shp`, `*_clipped_200m.shp`
+   - `output/site_100m/` – 100 m buffer (QGIS): same layers plus `site_100m.qgz` (open in QGIS)
 
 ## Importing into HEC-RAS
 
@@ -84,11 +98,27 @@ Some layers may have no features inside the 200 m buffer (e.g. no county boundar
 
 ```
 hecras/
-├── clip_for_hecras.py    # Main script
-├── requirements.txt      # Python dependencies
+├── clip_for_hecras.py    # Launcher (runs scripts/clip_for_hecras.py)
+├── requirements.txt
+├── requirements-dev.txt  # pytest, pytest-cov (for tests)
 ├── cooridante.txt        # Site lat, lon (one line)
-├── output/               # Clipped DEM and shapefiles
-├── USGS_OPR_CA_LosAngeles_*.tif   # Input DEM
-└── GOVTUNIT_California_State_Shape/
-    └── Shape/            # Input shapefiles
+├── assets/               # Input data
+│   ├── *.tif             # DEM
+│   └── GOVTUNIT_California_State_Shape/Shape/  # Shapefiles
+├── src/                  # Modular code
+│   ├── config.py
+│   ├── validation.py
+│   ├── clipping.py
+│   ├── qgis_project.py
+│   └── utils.py
+├── scripts/
+│   ├── validate_assets.py   # Pre-flight asset check
+│   ├── clip_for_hecras.py   # Main processing
+│   └── run_tests.py         # Test runner
+├── tests/                # Test suite
+│   ├── test_assets.py
+│   ├── test_clipping.py
+│   ├── test_qgis_project.py
+│   └── test_qgis_load.py   # QGIS API test (optional)
+└── output/               # Generated outputs
 ```
